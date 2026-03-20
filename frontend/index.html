@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>铁路售票系统</title>
+  <style>body{font-family:Arial,sans-serif;max-width:700px;margin:20px auto}label{display:block;margin:8px 0}</style>
+</head>
+<body>
+<h2>12306 抢票页面</h2>
+<label>日期 <input id="date" type="date"/></label>
+<label>车次
+  <select id="trainNo"><option>G1001</option><option>D2288</option><option>K901</option></select>
+</label>
+<label>始发站
+  <select id="from"><option>北京南</option><option>上海虹桥</option><option>杭州东</option></select>
+</label>
+<label>终到站
+  <select id="to"><option>上海虹桥</option><option>南京南</option><option>广州南</option></select>
+</label>
+<label>座位等级
+  <select id="seatLevel"><option value="1">一等</option><option value="2">二等</option><option value="3">三等</option></select>
+</label>
+<label>席位偏好(逗号分隔) <input id="seats" value="3A,3B"/></label>
+<label>人数 <input id="count" type="number" value="1" min="1" max="5"/></label>
+<button onclick="query()">查余票</button>
+<button onclick="book()">占座出票</button>
+<pre id="out"></pre>
+<script>
+  const apiBase = 'http://localhost:8080/api/ticket';
+  async function query() {
+    const body = {date: val('date'), trainNo: val('trainNo'), fromStation: val('from'), toStation: val('to')};
+    const r = await fetch(apiBase + '/query', {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body)});
+    out(await r.json());
+  }
+  async function book() {
+    const body = {
+      userId: '100001', trainNo: val('trainNo'), travelDate: val('date'), fromStation: val('from'), toStation: val('to'),
+      seatLevel: Number(val('seatLevel')), preferredSeats: val('seats').split(','), passengerCount: Number(val('count'))
+    };
+    const r = await fetch(apiBase + '/book', {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body)});
+    out(await r.json());
+  }
+  function val(id){return document.getElementById(id).value}
+  function out(data){document.getElementById('out').textContent = JSON.stringify(data,null,2)}
+</script>
+</body>
+</html>
